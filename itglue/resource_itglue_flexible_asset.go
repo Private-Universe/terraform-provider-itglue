@@ -1,7 +1,9 @@
 package itglue
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 
 	itglueRest "github.com/Private-Universe/itglue"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -50,14 +52,16 @@ func resourceITGlueFlexibleAssetCreate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	d.SetId(asset.Data.ID)
+	newID := fmt.Sprintf("fa-%s", asset.Data.ID)
+	d.SetId(newID)
 	return resourceITGlueFlexibleAssetRead(d, meta)
 }
 
 func resourceITGlueFlexibleAssetRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*itglueRest.ITGAPI)
 	sid := d.Id()
-	id, err := strconv.Atoi(sid)
+	s := strings.Split(sid, "-")
+	id, err := strconv.Atoi(s[1])
 	if err != nil {
 		return err
 	}
@@ -79,7 +83,8 @@ func resourceITGlueFlexibleAssetRead(d *schema.ResourceData, meta interface{}) e
 func resourceITGlueFlexibleAssetUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*itglueRest.ITGAPI)
 	sid := d.Id()
-	id, err := strconv.Atoi(sid)
+	s := strings.Split(sid, "-")
+	id, err := strconv.Atoi(s[1])
 	if err != nil {
 		return err
 	}
@@ -105,7 +110,8 @@ func resourceITGlueFlexibleAssetUpdate(d *schema.ResourceData, meta interface{})
 func resourceITGlueFlexibleAssetDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*itglueRest.ITGAPI)
 	sid := d.Id()
-	id, err := strconv.Atoi(sid)
+	s := strings.Split(sid, "-")
+	id, err := strconv.Atoi(s[1])
 	if err != nil {
 		return err
 	}
