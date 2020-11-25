@@ -3,7 +3,7 @@ module terraform-provider-itglue
 go 1.15
 
 require (
-	github.com/Private-Universe/itglue v0.2.0-alpha
+	github.com/Private-Universe/itglue v0.2.2-alpha
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/golang/protobuf v1.4.3 // indirect

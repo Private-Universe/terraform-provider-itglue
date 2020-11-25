@@ -36,6 +36,8 @@ github.com/Private-Universe/itglue v0.1.2-alpha h1:euMmSPNukb8fbL/dFxWhrCXCtmMyP
 github.com/Private-Universe/itglue v0.1.2-alpha/go.mod h1:ZsGBzi2JIuuWlJ1t2cPSnj85rszv2Lh9f9J+lx93v40=
 github.com/Private-Universe/itglue v0.2.0-alpha h1:i8xasWu+A2gfT6nzHTNGGwVl3C3dUcI/jha/G+4W3YU=
 github.com/Private-Universe/itglue v0.2.0-alpha/go.mod h1:ZsGBzi2JIuuWlJ1t2cPSnj85rszv2Lh9f9J+lx93v40=
+github.com/Private-Universe/itglue v0.2.2-alpha h1:cDJBIF2Ea3fAsQ41AakVSQTtXNlIoaj//LrbNf8xb8M=
+github.com/Private-Universe/itglue v0.2.2-alpha/go.mod h1:ZsGBzi2JIuuWlJ1t2cPSnj85rszv2Lh9f9J+lx93v40=
 github.com/agext/levenshtein v1.2.1/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
 github.com/agext/levenshtein v1.2.2 h1:0S/Yg6LYmFJ5stwQeRp6EeOcCbj7xiqQSdNelsXvaqE=
 github.com/agext/levenshtein v1.2.2/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
