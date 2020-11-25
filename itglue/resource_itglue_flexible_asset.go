@@ -1,7 +1,6 @@
 package itglue
 
 import (
-	"encoding/json"
 	"strconv"
 
 	itglueRest "github.com/Private-Universe/itglue"
@@ -39,72 +38,60 @@ func resourceITGlueFlexibleAssetCreate(d *schema.ResourceData, meta interface{})
 	organizationID := d.Get("organization-id").(int)
 	flexibleAssetTypeID := d.Get("flexible-asset-type-id").(int)
 
-	flexibleAsset := &itglueRest.FlexibleAsset{}
-	flexibleAsset.Data.Attributes.Traits = traits
-	flexibleAsset.Data.Attributes.OrganizationID = organizationID
-	flexibleAsset.Data.Attributes.FlexibleAssetTypeID = flexibleAssetTypeID
+	a := &itglueRest.FlexibleAsset{}
+	a.Data.Attributes.Traits = traits
+	a.Data.Attributes.OrganizationID = organizationID
+	a.Data.Attributes.FlexibleAssetTypeID = flexibleAssetTypeID
 
-	b, err := json.Marshal(flexibleAsset)
+	asset, err := client.PostFlexibleAsset(a)
 	if err != nil {
 		return err
 	}
 
-	asset, err := client.PostFlexibleAsset(b)
-	if err != nil {
-		return err
-	}
-
-	newFlexibleAsset := &itglueRest.FlexibleAsset{}
-	err = json.Unmarshal(asset, newFlexibleAsset)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(newFlexibleAsset.Data.ID)
+	d.SetId(asset.Data.ID)
 	return resourceITGlueFlexibleAssetRead(d, meta)
 }
 
 func resourceITGlueFlexibleAssetRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*itglueRest.ITGAPI)
-	id := d.Id()
-	sid, err := strconv.Atoi(id)
+	sid := d.Id()
+	id, err := strconv.Atoi(sid)
 	if err != nil {
 		return err
 	}
-	var a itglueRest.FlexibleAsset
-	req, err := client.GetFlexibleAssetsJSONByID(sid)
+	asset, err := client.GetFlexibleAssetsByID(id)
 	if err != nil {
 		return err
 	}
-	asset := &itglueRest.FlexibleAsset{}
-	err = json.Unmarshal(req, asset)
-	if err != nil {
-		return err
-	}
+
+	a := &itglueRest.FlexibleAsset{}
 	a.Data = asset.Data
 
 	d.Set("traits", a.Data.Attributes.Traits)
+	d.Set("organization-id", a.Data.Attributes.OrganizationID)
+	d.Set("flexible-asset-type-id", a.Data.Attributes.FlexibleAssetTypeID)
 
 	return nil
 }
 
 func resourceITGlueFlexibleAssetUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*itglueRest.ITGAPI)
-	id := d.Id()
-	sid, err := strconv.Atoi(id)
+	sid := d.Id()
+	id, err := strconv.Atoi(sid)
 	if err != nil {
 		return err
 	}
 	traits := d.Get("traits").(map[string]interface{})
+	organizationID := d.Get("organization-id").(int)
+	flexibleAssetTypeID := d.Get("flexible-asset-type-id").(int)
 
-	if d.HasChange("traits") {
+	if d.HasChanges("traits", "organization-id", "flexible-asset-type-id") {
 		a := &itglueRest.FlexibleAsset{}
 		a.Data.Attributes.Traits = traits
-		b, err := json.Marshal(a)
-		if err != nil {
-			return err
-		}
-		_, err = client.PatchFlexibleAsset(sid, b)
+		a.Data.Attributes.OrganizationID = organizationID
+		a.Data.Attributes.FlexibleAssetTypeID = flexibleAssetTypeID
+
+		_, err = client.PatchFlexibleAsset(id, a)
 		if err != nil {
 			return err
 		}
@@ -115,12 +102,12 @@ func resourceITGlueFlexibleAssetUpdate(d *schema.ResourceData, meta interface{})
 
 func resourceITGlueFlexibleAssetDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*itglueRest.ITGAPI)
-	id := d.Id()
-	sid, err := strconv.Atoi(id)
+	sid := d.Id()
+	id, err := strconv.Atoi(sid)
 	if err != nil {
 		return err
 	}
-	_, err = client.DeleteFlexibleAsset(sid)
+	_, err = client.DeleteFlexibleAsset(id)
 	if err != nil {
 		return err
 	}

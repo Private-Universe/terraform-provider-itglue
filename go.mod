@@ -3,11 +3,11 @@ module terraform-provider-itglue
 go 1.15
 
 require (
-	github.com/Private-Universe/itglue v0.1.2-alpha
+	github.com/Private-Universe/itglue v0.2.0-alpha
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
-	github.com/google/go-cmp v0.5.3 // indirect
+	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-hclog v0.15.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.0 // indirect
