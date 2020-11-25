@@ -15,12 +15,13 @@ func resourceITGlueFlexibleAsset() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Required: true,
 			},
-			"organization-id": {
+			"organization_id": {
 				Type:     schema.TypeInt,
 				Required: true,
 			},
-			"flexible-asset-type-id": {
+			"flexible_asset_type_id": {
 				Type:     schema.TypeInt,
 				Required: true,
 			},
@@ -35,10 +36,11 @@ func resourceITGlueFlexibleAsset() *schema.Resource {
 func resourceITGlueFlexibleAssetCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*itglueRest.ITGAPI)
 	traits := d.Get("traits").(map[string]interface{})
-	organizationID := d.Get("organization-id").(int)
-	flexibleAssetTypeID := d.Get("flexible-asset-type-id").(int)
+	organizationID := d.Get("organization_id").(int)
+	flexibleAssetTypeID := d.Get("flexible_asset_type_id").(int)
 
 	a := &itglueRest.FlexibleAsset{}
+	a.Data.Type = "flexible-assets"
 	a.Data.Attributes.Traits = traits
 	a.Data.Attributes.OrganizationID = organizationID
 	a.Data.Attributes.FlexibleAssetTypeID = flexibleAssetTypeID
@@ -68,8 +70,8 @@ func resourceITGlueFlexibleAssetRead(d *schema.ResourceData, meta interface{}) e
 	a.Data = asset.Data
 
 	d.Set("traits", a.Data.Attributes.Traits)
-	d.Set("organization-id", a.Data.Attributes.OrganizationID)
-	d.Set("flexible-asset-type-id", a.Data.Attributes.FlexibleAssetTypeID)
+	d.Set("organization_id", a.Data.Attributes.OrganizationID)
+	d.Set("flexible_asset_type_id", a.Data.Attributes.FlexibleAssetTypeID)
 
 	return nil
 }
@@ -82,10 +84,10 @@ func resourceITGlueFlexibleAssetUpdate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	traits := d.Get("traits").(map[string]interface{})
-	organizationID := d.Get("organization-id").(int)
-	flexibleAssetTypeID := d.Get("flexible-asset-type-id").(int)
+	organizationID := d.Get("organization_id").(int)
+	flexibleAssetTypeID := d.Get("flexible_asset_type_id").(int)
 
-	if d.HasChanges("traits", "organization-id", "flexible-asset-type-id") {
+	if d.HasChanges("traits", "organization_id", "flexible_asset_type_id") {
 		a := &itglueRest.FlexibleAsset{}
 		a.Data.Attributes.Traits = traits
 		a.Data.Attributes.OrganizationID = organizationID
