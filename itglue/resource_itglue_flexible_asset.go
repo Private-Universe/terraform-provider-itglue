@@ -1,16 +1,22 @@
 package itglue
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
 
 	itglueRest "github.com/Private-Universe/itglue"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceITGlueFlexibleAsset() *schema.Resource {
+func resourceFlexibleAsset() *schema.Resource {
 	return &schema.Resource{
+		CreateContext: resourceFlexibleAssetCreate,
+		ReadContext:   resourceFlexibleAssetRead,
+		UpdateContext: resourceFlexibleAssetUpdate,
+		DeleteContext: resourceFlexibleAssetDelete,
 		Schema: map[string]*schema.Schema{
 			"traits": {
 				Type: schema.TypeMap,
@@ -28,15 +34,14 @@ func resourceITGlueFlexibleAsset() *schema.Resource {
 				Required: true,
 			},
 		},
-		Create: resourceITGlueFlexibleAssetCreate,
-		Read:   resourceITGlueFlexibleAssetRead,
-		Update: resourceITGlueFlexibleAssetUpdate,
-		Delete: resourceITGlueFlexibleAssetDelete,
 	}
 }
 
-func resourceITGlueFlexibleAssetCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceFlexibleAssetCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*itglueRest.ITGAPI)
+
+	var diags diag.Diagnostics
+
 	traits := d.Get("traits").(map[string]interface{})
 	organizationID := d.Get("organization_id").(int)
 	flexibleAssetTypeID := d.Get("flexible_asset_type_id").(int)
@@ -49,25 +54,32 @@ func resourceITGlueFlexibleAssetCreate(d *schema.ResourceData, meta interface{})
 
 	asset, err := client.PostFlexibleAsset(a)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	newID := fmt.Sprintf("fa-%s", asset.Data.ID)
 	d.SetId(newID)
-	return resourceITGlueFlexibleAssetRead(d, meta)
+	resourceFlexibleAssetRead(ctx, d, meta)
+
+	return diags
 }
 
-func resourceITGlueFlexibleAssetRead(d *schema.ResourceData, meta interface{}) error {
+func resourceFlexibleAssetRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*itglueRest.ITGAPI)
+
+	var diags diag.Diagnostics
+
 	sid := d.Id()
 	s := strings.Split(sid, "-")
 	id, err := strconv.Atoi(s[1])
 	if err != nil {
-		return err
+		return diag.FromErr(err)
+
 	}
 	asset, err := client.GetFlexibleAssetsByID(id)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
+
 	}
 
 	a := &itglueRest.FlexibleAsset{}
@@ -77,16 +89,18 @@ func resourceITGlueFlexibleAssetRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("organization_id", a.Data.Attributes.OrganizationID)
 	d.Set("flexible_asset_type_id", a.Data.Attributes.FlexibleAssetTypeID)
 
-	return nil
+	return diags
 }
 
-func resourceITGlueFlexibleAssetUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceFlexibleAssetUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*itglueRest.ITGAPI)
+
 	sid := d.Id()
 	s := strings.Split(sid, "-")
 	id, err := strconv.Atoi(s[1])
 	if err != nil {
-		return err
+		return diag.FromErr(err)
+
 	}
 	traits := d.Get("traits").(map[string]interface{})
 	organizationID := d.Get("organization_id").(int)
@@ -100,25 +114,35 @@ func resourceITGlueFlexibleAssetUpdate(d *schema.ResourceData, meta interface{})
 
 		_, err = client.PatchFlexibleAsset(id, a)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
+
 		}
 	}
 
-	return nil
+	return resourceFlexibleAssetRead(ctx, d, meta)
 }
 
-func resourceITGlueFlexibleAssetDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceFlexibleAssetDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*itglueRest.ITGAPI)
+
+	var diags diag.Diagnostics
+
 	sid := d.Id()
 	s := strings.Split(sid, "-")
 	id, err := strconv.Atoi(s[1])
 	if err != nil {
-		return err
+		return diag.FromErr(err)
+
 	}
 	_, err = client.DeleteFlexibleAsset(id)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
+
 	}
 
-	return nil
+	// d.SetId("") is automatically called assuming delete returns no errors, but
+	// it is added here for explicitness.
+	d.SetId("")
+
+	return diags
 }

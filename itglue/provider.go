@@ -1,7 +1,10 @@
 package itglue
 
 import (
+	"context"
+
 	itglueRest "github.com/Private-Universe/itglue"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -17,16 +20,18 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"itglue_flexible_asset": resourceITGlueFlexibleAsset(),
+			"itglue_flexible_asset": resourceFlexibleAsset(),
 		},
-		DataSourcesMap: map[string]*schema.Resource{},
-		ConfigureFunc:  configureFunc(),
+		DataSourcesMap:       map[string]*schema.Resource{},
+		ConfigureContextFunc: providerConfigure,
 	}
 }
 
-func configureFunc() func(*schema.ResourceData) (interface{}, error) {
-	return func(d *schema.ResourceData) (interface{}, error) {
-		client := itglueRest.NewITGAPI(d.Get("api_key").(string))
-		return client, nil
-	}
+func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	key := d.Get("api_key").(string)
+	client := itglueRest.NewITGAPI(key)
+
+	return client, diags
 }
