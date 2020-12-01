@@ -19,11 +19,71 @@ func resourceFlexibleAsset() *schema.Resource {
 		DeleteContext: resourceFlexibleAssetDelete,
 		Schema: map[string]*schema.Schema{
 			"traits": {
-				Type: schema.TypeMap,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
 				Required: true,
+				Type:     schema.TypeSet,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"checkboxes": {
+							Type: schema.TypeMap,
+							Elem: &schema.Schema{
+								Type: schema.TypeBool,
+							},
+							Optional: true,
+						},
+						"dates": {
+							Type: schema.TypeMap,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"text": {
+							Type: schema.TypeMap,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"textboxes": {
+							Type: schema.TypeMap,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"numbers": {
+							Type: schema.TypeMap,
+							Elem: &schema.Schema{
+								Type: schema.TypeFloat,
+							},
+							Optional: true,
+						},
+						"percents": {
+							Type: schema.TypeMap,
+							Elem: &schema.Schema{
+								Type: schema.TypeFloat,
+							},
+							Optional: true,
+						},
+						"selects": {
+							Type: schema.TypeMap,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"tags": {
+							Type: schema.TypeMap,
+							Elem: &schema.Schema{
+								Type: schema.TypeList,
+								Elem: &schema.Schema{
+									Type: schema.TypeInt,
+								},
+							},
+							Optional: true,
+						},
+					},
+				},
 			},
 			"organization_id": {
 				Type:     schema.TypeInt,
@@ -42,19 +102,20 @@ func resourceFlexibleAssetCreate(ctx context.Context, d *schema.ResourceData, me
 
 	var diags diag.Diagnostics
 
-	traits := d.Get("traits").(map[string]interface{})
+	traits := d.Get("traits").(*schema.Set).List()
 	organizationID := d.Get("organization_id").(int)
 	flexibleAssetTypeID := d.Get("flexible_asset_type_id").(int)
 
 	a := &itglueRest.FlexibleAsset{}
 	a.Data.Type = "flexible-assets"
-	a.Data.Attributes.Traits = traits
+	combinedTraits := combineTraits(traits)
+	a.Data.Attributes.Traits = combinedTraits
 	a.Data.Attributes.OrganizationID = organizationID
 	a.Data.Attributes.FlexibleAssetTypeID = flexibleAssetTypeID
 
 	asset, err := client.PostFlexibleAsset(a)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("%s %s", err, traits)
 	}
 
 	newID := fmt.Sprintf("fa-%s", asset.Data.ID)
@@ -82,12 +143,16 @@ func resourceFlexibleAssetRead(ctx context.Context, d *schema.ResourceData, meta
 
 	}
 
-	a := &itglueRest.FlexibleAsset{}
-	a.Data = asset.Data
-
-	d.Set("traits", a.Data.Attributes.Traits)
-	d.Set("organization_id", a.Data.Attributes.OrganizationID)
-	d.Set("flexible_asset_type_id", a.Data.Attributes.FlexibleAssetTypeID)
+	a := flattenFlexibleAsset(asset)
+	if err := d.Set("traits", a.Data.Attributes.Traits); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("organization_id", a.Data.Attributes.OrganizationID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("flexible_asset_type_id", a.Data.Attributes.FlexibleAssetTypeID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diags
 }
@@ -102,15 +167,18 @@ func resourceFlexibleAssetUpdate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 
 	}
-	traits := d.Get("traits").(map[string]interface{})
-	organizationID := d.Get("organization_id").(int)
-	flexibleAssetTypeID := d.Get("flexible_asset_type_id").(int)
 
 	if d.HasChanges("traits", "organization_id", "flexible_asset_type_id") {
-		a := &itglueRest.FlexibleAsset{}
-		a.Data.Attributes.Traits = traits
-		a.Data.Attributes.OrganizationID = organizationID
-		a.Data.Attributes.FlexibleAssetTypeID = flexibleAssetTypeID
+		traits := d.Get("traits").(*schema.Set).List()
+		organizationID := d.Get("organization_id").(int)
+		flexibleAssetTypeID := d.Get("flexible_asset_type_id").(int)
+
+		asset := &itglueRest.FlexibleAsset{}
+		combinedTraits := combineTraits(traits)
+		asset.Data.Attributes.Traits = combinedTraits
+		asset.Data.Attributes.OrganizationID = organizationID
+		asset.Data.Attributes.FlexibleAssetTypeID = flexibleAssetTypeID
+		a := flattenFlexibleAsset(asset)
 
 		_, err = client.PatchFlexibleAsset(id, a)
 		if err != nil {
@@ -145,4 +213,59 @@ func resourceFlexibleAssetDelete(ctx context.Context, d *schema.ResourceData, me
 	d.SetId("")
 
 	return diags
+}
+
+func flattenFlexibleAsset(fa *itglueRest.FlexibleAsset) *itglueRest.FlexibleAsset {
+	nfa := &itglueRest.FlexibleAsset{}
+	nmap := make(map[string]interface{})
+
+	for i, asset := range fa.Data.Attributes.Traits {
+		switch asset.(type) {
+		case map[string]interface{}:
+			tidl := getTraitTagIDList(asset.(map[string]interface{}))
+			nmap[i] = tidl
+		case string:
+			nmap[i] = asset
+		case float64:
+			nmap[i] = asset
+		default:
+			continue
+		}
+	}
+
+	nfa.Data.Attributes.OrganizationID = fa.Data.Attributes.OrganizationID
+	nfa.Data.Attributes.FlexibleAssetTypeID = fa.Data.Attributes.FlexibleAssetTypeID
+	nfa.Data.Attributes.Traits = nmap
+	return nfa
+}
+
+func getTraitTagIDList(tagList map[string]interface{}) []float64 {
+	var list []float64
+	for _, trait := range tagList["values"].([]interface{}) {
+		l := trait.(map[string]interface{})
+		for k, t := range l {
+			if k == "id" {
+				list = append(list, t.(float64))
+			}
+		}
+	}
+	return list
+}
+
+func combineTraits(traitsList []interface{}) map[string]interface{} {
+	saves := make(map[string]interface{})
+
+	for _, traitGroup := range traitsList {
+		l := traitGroup.(map[string]interface{})
+		for _, tg := range l {
+			t := tg.(map[string]interface{})
+			if len(t) != 0 {
+				for tkey, value := range t {
+					saves[tkey] = value
+				}
+			}
+		}
+	}
+
+	return saves
 }
