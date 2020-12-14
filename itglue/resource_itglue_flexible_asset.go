@@ -2,9 +2,7 @@ package itglue
 
 import (
 	"context"
-	"fmt"
 	"strconv"
-	"strings"
 
 	itglueRest "github.com/Private-Universe/itglue"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -75,14 +73,19 @@ func resourceFlexibleAsset() *schema.Resource {
 						"tags": {
 							Type: schema.TypeMap,
 							Elem: &schema.Schema{
-								Type: schema.TypeList,
-								Elem: &schema.Schema{
-									Type: schema.TypeInt,
-								},
+								Type: schema.TypeString,
 							},
 							Optional: true,
 						},
 					},
+				},
+			},
+			"trait_store": {
+				Type:     schema.TypeMap,
+				Computed: true,
+
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 			"organization_id": {
@@ -115,10 +118,10 @@ func resourceFlexibleAssetCreate(ctx context.Context, d *schema.ResourceData, me
 
 	asset, err := client.PostFlexibleAsset(a)
 	if err != nil {
-		return diag.Errorf("%s %s", err, traits)
+		return diag.FromErr(err)
 	}
 
-	newID := fmt.Sprintf("fa-%s", asset.Data.ID)
+	newID := asset.Data.ID
 	d.SetId(newID)
 	resourceFlexibleAssetRead(ctx, d, meta)
 
@@ -130,9 +133,8 @@ func resourceFlexibleAssetRead(ctx context.Context, d *schema.ResourceData, meta
 
 	var diags diag.Diagnostics
 
-	sid := d.Id()
-	s := strings.Split(sid, "-")
-	id, err := strconv.Atoi(s[1])
+	s := d.Id()
+	id, err := strconv.Atoi(s)
 	if err != nil {
 		return diag.FromErr(err)
 
@@ -144,7 +146,7 @@ func resourceFlexibleAssetRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	a := flattenFlexibleAsset(asset)
-	if err := d.Set("traits", a.Data.Attributes.Traits); err != nil {
+	if err := d.Set("trait_store", a.Data.Attributes.Traits); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := d.Set("organization_id", a.Data.Attributes.OrganizationID); err != nil {
@@ -160,9 +162,8 @@ func resourceFlexibleAssetRead(ctx context.Context, d *schema.ResourceData, meta
 func resourceFlexibleAssetUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*itglueRest.ITGAPI)
 
-	sid := d.Id()
-	s := strings.Split(sid, "-")
-	id, err := strconv.Atoi(s[1])
+	s := d.Id()
+	id, err := strconv.Atoi(s)
 	if err != nil {
 		return diag.FromErr(err)
 
@@ -179,6 +180,7 @@ func resourceFlexibleAssetUpdate(ctx context.Context, d *schema.ResourceData, me
 		asset.Data.Attributes.OrganizationID = organizationID
 		asset.Data.Attributes.FlexibleAssetTypeID = flexibleAssetTypeID
 		a := flattenFlexibleAsset(asset)
+		a.Data.Type = "flexible-assets"
 
 		_, err = client.PatchFlexibleAsset(id, a)
 		if err != nil {
@@ -195,9 +197,8 @@ func resourceFlexibleAssetDelete(ctx context.Context, d *schema.ResourceData, me
 
 	var diags diag.Diagnostics
 
-	sid := d.Id()
-	s := strings.Split(sid, "-")
-	id, err := strconv.Atoi(s[1])
+	s := d.Id()
+	id, err := strconv.Atoi(s)
 	if err != nil {
 		return diag.FromErr(err)
 
@@ -222,14 +223,10 @@ func flattenFlexibleAsset(fa *itglueRest.FlexibleAsset) *itglueRest.FlexibleAsse
 	for i, asset := range fa.Data.Attributes.Traits {
 		switch asset.(type) {
 		case map[string]interface{}:
-			tidl := getTraitTagIDList(asset.(map[string]interface{}))
+			tidl := strconv.FormatFloat(getTraitTagIDList(asset.(map[string]interface{}))[0], 'f', 0, 64)
 			nmap[i] = tidl
-		case string:
-			nmap[i] = asset
-		case float64:
-			nmap[i] = asset
 		default:
-			continue
+			nmap[i] = asset
 		}
 	}
 
@@ -239,6 +236,7 @@ func flattenFlexibleAsset(fa *itglueRest.FlexibleAsset) *itglueRest.FlexibleAsse
 	return nfa
 }
 
+// will work better in the future for type map containing a list of integers
 func getTraitTagIDList(tagList map[string]interface{}) []float64 {
 	var list []float64
 	for _, trait := range tagList["values"].([]interface{}) {
