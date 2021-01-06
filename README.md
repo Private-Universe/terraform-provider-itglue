@@ -14,6 +14,7 @@ It uses our incomplete [Go IT Glue API wrapper](https://github.com/Private-Unive
     - [Example providing API key using AWS Parameter Store](#example-providing-api-key-using-aws-parameter-store)
   - [Example Usage](#example-usage)
     - [Flexible assets](#flexible-assets)
+      - [Limitations](#limitations)
 
 ## Installation
 
@@ -99,14 +100,12 @@ For flexible assets, you need to provide traits, organization_id and flexible_as
 
 The traits are based upon how your flexible asset is set up and can be any string.
 
-***Currently password traits are not supported but all other trait types should work when passed a string, integer or boolean.***
-
 You also need to provide the flexible asset type ID which has the traits and the organization ID that you want the flexible asset to be listed under.
 
 ```terraform
 resource "itglue_flexible_asset" "example_server" {
   traits = {
-        company-name = "var.tag_company_name"
+        company-name = var.tag_company_name
         admin-username = "test"
         url = "https://example.com"
         internal-ip-address = "1.1.1.1"
@@ -128,3 +127,9 @@ resource "itglue_flexible_asset" "server_license" {
   flexible_asset_type_id = 45679
 }
 ```
+
+#### Limitations
+
+***Currently password traits are not supported but all other trait types should work when passed a string, integer or boolean.***
+
+***Currently tag traits can only have one ID specified.***
