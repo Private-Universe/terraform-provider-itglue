@@ -16,73 +16,73 @@ func resourceFlexibleAsset() *schema.Resource {
 		UpdateContext: resourceFlexibleAssetUpdate,
 		DeleteContext: resourceFlexibleAssetDelete,
 		Schema: map[string]*schema.Schema{
+			// "traits": {
+			// 	Required: true,
+			// 	Type:     schema.TypeSet,
+			// 	Elem: &schema.Resource{
+			// 		Schema: map[string]*schema.Schema{
+			// 			"checkboxes": {
+			// 				Type: schema.TypeMap,
+			// 				Elem: &schema.Schema{
+			// 					Type: schema.TypeBool,
+			// 				},
+			// 				Optional: true,
+			// 			},
+			// 			"dates": {
+			// 				Type: schema.TypeMap,
+			// 				Elem: &schema.Schema{
+			// 					Type: schema.TypeString,
+			// 				},
+			// 				Optional: true,
+			// 			},
+			// 			"text": {
+			// 				Type: schema.TypeMap,
+			// 				Elem: &schema.Schema{
+			// 					Type: schema.TypeString,
+			// 				},
+			// 				Optional: true,
+			// 			},
+			// 			"textboxes": {
+			// 				Type: schema.TypeMap,
+			// 				Elem: &schema.Schema{
+			// 					Type: schema.TypeString,
+			// 				},
+			// 				Optional: true,
+			// 			},
+			// 			"numbers": {
+			// 				Type: schema.TypeMap,
+			// 				Elem: &schema.Schema{
+			// 					Type: schema.TypeFloat,
+			// 				},
+			// 				Optional: true,
+			// 			},
+			// 			"percents": {
+			// 				Type: schema.TypeMap,
+			// 				Elem: &schema.Schema{
+			// 					Type: schema.TypeFloat,
+			// 				},
+			// 				Optional: true,
+			// 			},
+			// 			"selects": {
+			// 				Type: schema.TypeMap,
+			// 				Elem: &schema.Schema{
+			// 					Type: schema.TypeString,
+			// 				},
+			// 				Optional: true,
+			// 			},
+			// 			"tags": {
+			// 				Type: schema.TypeMap,
+			// 				Elem: &schema.Schema{
+			// 					Type: schema.TypeString,
+			// 				},
+			// 				Optional: true,
+			// 			},
+			// 		},
+			// 	},
+			// },
 			"traits": {
-				Required: true,
-				Type:     schema.TypeSet,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"checkboxes": {
-							Type: schema.TypeMap,
-							Elem: &schema.Schema{
-								Type: schema.TypeBool,
-							},
-							Optional: true,
-						},
-						"dates": {
-							Type: schema.TypeMap,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"text": {
-							Type: schema.TypeMap,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"textboxes": {
-							Type: schema.TypeMap,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"numbers": {
-							Type: schema.TypeMap,
-							Elem: &schema.Schema{
-								Type: schema.TypeFloat,
-							},
-							Optional: true,
-						},
-						"percents": {
-							Type: schema.TypeMap,
-							Elem: &schema.Schema{
-								Type: schema.TypeFloat,
-							},
-							Optional: true,
-						},
-						"selects": {
-							Type: schema.TypeMap,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"tags": {
-							Type: schema.TypeMap,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-					},
-				},
-			},
-			"trait_store": {
 				Type:     schema.TypeMap,
-				Computed: true,
+				Required: true,
 
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -105,14 +105,13 @@ func resourceFlexibleAssetCreate(ctx context.Context, d *schema.ResourceData, me
 
 	var diags diag.Diagnostics
 
-	traits := d.Get("traits").(*schema.Set).List()
+	traits := d.Get("traits").(map[string]interface{})
 	organizationID := d.Get("organization_id").(int)
 	flexibleAssetTypeID := d.Get("flexible_asset_type_id").(int)
 
 	a := &itglueRest.FlexibleAsset{}
 	a.Data.Type = "flexible-assets"
-	combinedTraits := combineTraits(traits)
-	a.Data.Attributes.Traits = combinedTraits
+	a.Data.Attributes.Traits = traits
 	a.Data.Attributes.OrganizationID = organizationID
 	a.Data.Attributes.FlexibleAssetTypeID = flexibleAssetTypeID
 
@@ -146,7 +145,7 @@ func resourceFlexibleAssetRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	a := flattenFlexibleAsset(asset)
-	if err := d.Set("trait_store", a.Data.Attributes.Traits); err != nil {
+	if err := d.Set("traits", a.Data.Attributes.Traits); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := d.Set("organization_id", a.Data.Attributes.OrganizationID); err != nil {
@@ -170,13 +169,12 @@ func resourceFlexibleAssetUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if d.HasChanges("traits", "organization_id", "flexible_asset_type_id") {
-		traits := d.Get("traits").(*schema.Set).List()
+		traits := d.Get("traits").(map[string]interface{})
 		organizationID := d.Get("organization_id").(int)
 		flexibleAssetTypeID := d.Get("flexible_asset_type_id").(int)
 
 		asset := &itglueRest.FlexibleAsset{}
-		combinedTraits := combineTraits(traits)
-		asset.Data.Attributes.Traits = combinedTraits
+		asset.Data.Attributes.Traits = traits
 		asset.Data.Attributes.OrganizationID = organizationID
 		asset.Data.Attributes.FlexibleAssetTypeID = flexibleAssetTypeID
 		a := flattenFlexibleAsset(asset)
