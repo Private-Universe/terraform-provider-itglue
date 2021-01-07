@@ -21,6 +21,7 @@ func Provider() *schema.Provider {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"itglue_flexible_asset": resourceFlexibleAsset(),
+			"itglue_password":       resourcePassword(),
 		},
 		DataSourcesMap:       map[string]*schema.Resource{},
 		ConfigureContextFunc: providerConfigure,
