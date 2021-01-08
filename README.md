@@ -106,25 +106,27 @@ You also need to provide the flexible asset type ID which has the traits and the
 ```terraform
 resource "itglue_flexible_asset" "example_server" {
   traits = {
-        company-name = var.tag_company_name
-        admin-username = "test"
-        url = "https://example.com"
-        internal-ip-address = "1.1.1.1"
-        external-ip-address = "1.1.1.2"
+        company-name         = var.tag_company_name
+        admin-username       = "test"
+        url                  = "https://example.com"
+        internal-ip-address  = "1.1.1.1"
+        external-ip-address  = "1.1.1.2"
         link-to-organisation = 123456
-        license-key = itglue_flexible_asset.server_license.id
+        license-key          = itglue_flexible_asset.server_license.id
+        notes                = "This document is managed my Terraform. Changes will be overridden."
   }
-  organization_id = 123457
+  organization_id        = 123457
   flexible_asset_type_id = 45678
 }
 
 resource "itglue_flexible_asset" "server_license" {
   traits = {
-        license-key = "AAAA-BBBB-CCCC-DDDD"
+        license-key  = "AAAA-BBBB-CCCC-DDDD"
         renewal-date = "2021-09-09"
         renewal-type = "Monthly"
+        notes        = "This document is managed my Terraform. Changes will be overridden."
   }
-  organization_id = 123457
+  organization_id        = 123457
   flexible_asset_type_id = 45679
 }
 ```
@@ -143,12 +145,13 @@ Example with an embedded password, embedded into the above server flexible asset
 
 ```terraform
 resource "itglue_password" "server_password" {
-  name = "test server password"
-  username = "testusername"
-  password = "testpassword"
-  resource_id = itglue_flexible_asset.example_server.id
-  resource_type = "Flexible Asset"
+  name            = "test server password"
+  username        = "testusername"
+  password        = "testpassword"
+  resource_id     = itglue_flexible_asset.example_server.id
+  resource_type   = "Flexible Asset"
   organization_id = 123457
+  notes           = "This document is managed my Terraform. Changes will be overridden."
 }
 ```
 
@@ -156,9 +159,10 @@ Example with a standalone password
 
 ```terraform
 resource "itglue_password" "server_password" {
-  name = "test server password"
-  username = "testusername"
-  password = "testpassword"
+  name            = "test server password"
+  username        = "testusername"
+  password        = "testpassword"
   organization_id = 123457
+  notes           = "This document is managed my Terraform. Changes will be overridden."
 }
 ```
