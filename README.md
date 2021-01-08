@@ -61,7 +61,7 @@ terraform {
 Add the IT Glue API key to the provider
 ```terraform
 provider "itglue" {
-  api_key = locals.itglue_api_key.key
+  api_key = local.itglue_api_key.key
 }
 ```
 
@@ -89,7 +89,7 @@ locals {
 }
 ```
 
-Use `locals.itglue_api_key.key` where needed.
+Use `local.itglue_api_key.key` where needed.
 
 ## Example Usage
 
