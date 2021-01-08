@@ -15,6 +15,7 @@ It uses our incomplete [Go IT Glue API wrapper](https://github.com/Private-Unive
   - [Example Usage](#example-usage)
     - [Flexible assets](#flexible-assets)
       - [Limitations](#limitations)
+    - [Passwords](#passwords)
 
 ## Installation
 
@@ -130,6 +131,34 @@ resource "itglue_flexible_asset" "server_license" {
 
 #### Limitations
 
-***Currently password traits are not supported but all other trait types should work when passed a string, integer or boolean.***
+*Currently password traits are not supported but all other trait types should work when passed a string, integer or boolean.*
 
-***Currently tag traits can only have one ID specified.***
+*Currently tag traits can only have one ID specified.*
+
+### Passwords
+
+Passwords are recommended to be passed from something like AWS Parameter Store (refer to [Example providing API key using AWS Parameter Store](#example-providing-api-key-using-aws-parameter-store)).
+
+Example with an embedded password, embedded into the above server flexible asset
+
+```terraform
+resource "itglue_password" "server_password" {
+  name = "test server password"
+  username = "testusername"
+  password = "testpassword"
+  resource_id = itglue_flexible_asset.example_server.id
+  resource_type = "Flexible Asset"
+  organization_id = 123457
+}
+```
+
+Example with a standalone password
+
+```terraform
+resource "itglue_password" "server_password" {
+  name = "test server password"
+  username = "testusername"
+  password = "testpassword"
+  organization_id = 123457
+}
+```
