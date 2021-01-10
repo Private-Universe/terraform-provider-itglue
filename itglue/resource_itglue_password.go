@@ -134,6 +134,13 @@ func resourcePasswordRead(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.FromErr(err)
 	}
 
+	// Important: we do not set the resource_type here due to how the IT Glue API works.
+	// E.g when sending it as Flexible Asset, the API will then return flexible_asset.
+	// This makes Terraform think that the resource_type needs to be set again as it does not reflect the inital value.
+	// You may think "why not just set it to flexible_asset in the first place"
+	// The IT Glue API only accepts the values listed below:
+	// Configuration, Contact, Document, Domain, Location, SSL Certificate, Flexible Asset, Ticket
+
 	if err := d.Set("name", p.Data.Attributes.Name); err != nil {
 		return diag.FromErr(err)
 	}

@@ -150,6 +150,10 @@ func resourceFlexibleAssetDelete(ctx context.Context, d *schema.ResourceData, me
 	return diags
 }
 
+// This function flattens out flexible resources.
+// Instead of having a list of structs which contain IDs somewhere, you get a list of just the IDs.
+// This makes it achievable to compare/detect changes with Terraform.
+// In the future, this will hopefully enable specifying multiple IDs in Tag Traits.
 func flattenFlexibleAsset(fa *itglueRest.FlexibleAsset) *itglueRest.FlexibleAsset {
 	nfa := &itglueRest.FlexibleAsset{}
 	nmap := make(map[string]interface{})
@@ -170,7 +174,7 @@ func flattenFlexibleAsset(fa *itglueRest.FlexibleAsset) *itglueRest.FlexibleAsse
 	return nfa
 }
 
-// will work better in the future for type map containing a list of integers
+// Will work better in the future for type map containing a list of integers
 func getTraitTagIDList(tagList map[string]interface{}) []float64 {
 	var list []float64
 	for _, trait := range tagList["values"].([]interface{}) {
@@ -184,6 +188,8 @@ func getTraitTagIDList(tagList map[string]interface{}) []float64 {
 	return list
 }
 
+// Currently unused function which combines separate Terraform variables into one traits variable.
+// E.g having separate Terraform variables for tags, text fields, numbers, etc.
 func combineTraits(traitsList []interface{}) map[string]interface{} {
 	saves := make(map[string]interface{})
 
