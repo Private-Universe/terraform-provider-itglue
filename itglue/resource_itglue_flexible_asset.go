@@ -104,6 +104,7 @@ func resourceFlexibleAssetUpdate(ctx context.Context, d *schema.ResourceData, me
 
 	}
 
+	// This is done together as any traits not specified in the patch request will be deleted in IT Glue.
 	if d.HasChanges("traits", "organization_id", "flexible_asset_type_id") {
 		traits := d.Get("traits").(map[string]interface{})
 		organizationID := d.Get("organization_id").(int)
