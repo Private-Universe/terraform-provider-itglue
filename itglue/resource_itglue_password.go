@@ -34,8 +34,9 @@ func resourcePassword() *schema.Resource {
 				Optional: true,
 			},
 			"password": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:      schema.TypeString,
+				Required:  true,
+				Sensitive: true,
 			},
 			"url": {
 				Type:     schema.TypeString,
