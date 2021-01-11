@@ -95,6 +95,8 @@ Use `local.itglue_api_key.key` where needed.
 
 Currently only the below are supported.
 
+Refer to the [official IT Glue API documentation](https://api.itglue.com/developer/) for valid fields. Please submit an issue or pull request if something is not supported.
+
 ### Flexible assets
 
 For flexible assets, you need to provide traits, organization_id and flexible_asset_type_id.
