@@ -115,7 +115,7 @@ resource "itglue_flexible_asset" "example_server" {
         external-ip-address  = "1.1.1.2"
         link-to-organisation = 123456
         license-key          = itglue_flexible_asset.server_license.id
-        notes                = "This document is managed my Terraform. Changes will be overridden."
+        notes                = "This document is managed by Terraform. Changes will be overridden."
   }
   organization_id        = 123457
   flexible_asset_type_id = 45678
@@ -126,7 +126,7 @@ resource "itglue_flexible_asset" "server_license" {
         license-key  = "AAAA-BBBB-CCCC-DDDD"
         renewal-date = "2021-09-09"
         renewal-type = "Monthly"
-        notes        = "This document is managed my Terraform. Changes will be overridden."
+        notes        = "This document is managed by Terraform. Changes will be overridden."
   }
   organization_id        = 123457
   flexible_asset_type_id = 45679
@@ -153,7 +153,7 @@ resource "itglue_password" "server_password" {
   resource_id     = itglue_flexible_asset.example_server.id
   resource_type   = "Flexible Asset"
   organization_id = 123457
-  notes           = "This document is managed my Terraform. Changes will be overridden."
+  notes           = "This document is managed by Terraform. Changes will be overridden."
 }
 ```
 
@@ -165,6 +165,6 @@ resource "itglue_password" "server_password" {
   username        = "testusername"
   password        = "testpassword"
   organization_id = 123457
-  notes           = "This document is managed my Terraform. Changes will be overridden."
+  notes           = "This document is managed by Terraform. Changes will be overridden."
 }
 ```
