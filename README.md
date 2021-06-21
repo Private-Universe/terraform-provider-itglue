@@ -25,7 +25,7 @@ Run the following command to build the provider or download a GitHub release.
 go build -o terraform-provider-itglue.exe
 ```
 
-Move the executable to the below directory (replace x.x.x with the appropriate version number)
+Move the executable to the directory below (replace x.x.x with the appropriate version number)
 ```
 %AppData%\terraform.d\plugins\privateuniverse.com.au\pu\itglue\x.x.x\windows_amd64\
 ```
@@ -103,7 +103,7 @@ For flexible assets, you need to provide traits, organization_id and flexible_as
 
 The traits are based upon how your flexible asset is set up and can be any string.
 
-You also need to provide the flexible asset type ID which has the traits and the organization ID that you want the flexible asset to be listed under.
+You also need to provide the flexible asset type ID with the traits and the organization ID under which you want the flexible asset listed.
 
 ```terraform
 resource "itglue_flexible_asset" "example_server" {
@@ -143,7 +143,7 @@ resource "itglue_flexible_asset" "server_license" {
 
 Passwords are recommended to be passed from something like AWS Parameter Store (refer to [Example providing API key using AWS Parameter Store](#example-providing-api-key-using-aws-parameter-store)).
 
-Example with an embedded password, embedded into the above server flexible asset
+Example with an embedded password, embedded into the server flexible asset above
 
 ```terraform
 resource "itglue_password" "server_password" {
